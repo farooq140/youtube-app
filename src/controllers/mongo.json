@@ -1,0 +1,416 @@
+db.cars.find({
+     $and:[
+          {fuel_type:"Diesel"},
+          {"engine.type":"Turbocharged"},
+          {"sunroof":true}
+     ]
+})
+db.cars.find({
+     $or:[
+          {fuel_type:"Diesel"},
+          {"engine.type":"Turbocharged"},
+         
+     ]
+})
+ db.cars.updateOne({
+     model:"Nexon"},
+     {
+          $set:{
+               color:"Red"
+          }
+     
+ })
+  db.cars.findOne(
+  {features:{
+     $all:["Bluetooth","Sunroof"]
+  }}
+  )
+  db.cars.find().count()
+  db.cars.aggerate([
+     {$group:{
+          _id:"$maker",
+          
+     }}
+  ])
+  db.cars.aggregate([
+     {$group:{
+          _id:"$maker",
+          count:{$sum:1}
+     }}
+  ])
+  db.cars.aggregate([
+     {$group:{
+          _id:"$maker",
+          PriceAvg:{$avg:"$price"}
+     }},
+   
+  ])
+  db.cars.aggregate([
+     {$group:{
+          _id:"$fuel_type",
+          carCount:{$sum:1}
+     }},
+   
+  ])
+  db.cars.aggregate([
+     {$match:{maker:"Hyundai","engine.cc":{$gt:1000}}},
+     
+     
+  ])
+  db.cars.aggregate([
+     {$match:{maker:"Hyundai"
+     }},
+     {
+          $count:"Hyundaicar"
+     
+     }     
+  ])
+  db.cars.aggregate([
+     {$match:{maker:"Hyundai"}},
+     {
+          $group:{
+               _id:"$model",
+               car_count:{$sum:1}
+          }
+     },
+     
+
+  ])
+  db.cars.aggregate([
+     {$match:{maker:"Hyundai"}},
+     {
+          $project:{
+               _id:0,
+               model:"$model",
+               price:"$price",
+               
+               fuel_type:"$fuel_type"
+          },
+     },
+       {
+          $sort:{
+               model:1
+          }
+       }  
+     
+  ])
+  db.cars.aggregate([
+     {
+          $sortByCount:"$maker"
+     }
+     
+  ])
+  db.cars.aggregate([
+     {
+          $unwind:"$owners"
+     }
+  ])
+  db.cars.aggregate([
+     {
+          $match:{
+               maker:"Hyundai"
+          }
+     },
+     {
+          $project:{
+               _id:0,
+               carName:{
+                    $concat:["$maker"," ","$model"]
+               }
+          }
+     }
+       ])
+       db.cars.aggregate([
+          {
+               $match:{
+                    maker:"Hyundai"
+               }
+          },
+          {
+               $project:{
+                    _id:0,
+                    model:{$toUpper:"$model"},
+               }
+          }
+            ])       
+
+db.cars.aggregate([
+     {
+          $match:{
+               maker:"Hyundai"
+          }
+     },
+     {
+          $project:{
+               _id:0,
+               carName:{$toUpper:{$concat:["$maker"," ","$model"]}}
+          }
+     }
+])
+db.cars.aggregate([
+     {$project:{
+          _id:0,
+          model:1,
+          price:1,
+          fuel_type:"$fuel_type",
+          owners:{
+                    name:1,
+  
+          },
+          is_desel:{
+               $regexMatch:{
+                    input:"$fuel_type",
+                    regex:"Diesel"
+               }
+          }
+     }}
+])
+
+
+db.cars.aggregate([
+     {
+          $match:{
+               maker:"Hyundai"
+          }
+     },
+     {
+          $project:{
+               _id:0,
+               carName:{$toUpper:{$concat:["$maker"," ","$model"]}}
+          }
+     },
+     {
+          $out:"HyundaiCars"
+     }
+     
+])
+db.cars.aggregate([
+     {
+          $project:{
+               $sum:["$price"]          }
+     }
+])
+db.cars.aggregate([
+{
+     $project:{
+          _id:0,
+          model:1,
+          price:{$add:["$price",1000]},
+               }
+}
+])
+db.cars.aggregate([
+     {
+          $project:{
+               _id:0,
+               model:1,
+               price:1
+          },
+     },
+          
+               {
+                    $addFields:{
+                         carPrice:{$round:[{$divide:["$price",100000]},2]}
+                    }
+               }
+     
+
+])
+
+     db.cars.aggregate([
+          {
+               $match:{
+                    maker:"Hyundai"
+               }
+          },
+          {
+               $set:{
+                    totalServiceCost:{
+                         $sum:"$service_history.cost"
+                    }
+               }
+          },
+          {
+               $project:{
+                    _id:0,
+                    model:1,
+                    totalServiceCost:1
+               }
+          }
+     ])
+
+     db.cars.aggregate([
+          {
+               $match:{
+                    maker:"Hyundai"
+               }
+          },
+          {
+               $set:{
+                    totalServiceCost:{
+                         $sum:"$service_history.cost"
+                    }
+               }
+          },
+          {
+               $project:{
+                    _id:0,
+                    model:1,
+                    totalServiceCost:1
+               }
+          },
+          {
+               $sort:{
+                    totalServiceCost:-1
+               }
+          }
+     ])
+
+
+     db.cars.aggregate([
+          {
+               $project:{
+                    _id:0,
+                    model:1,
+                    maker:1,
+                    price:1,
+                    fuelCategory:{
+                         $cond:{
+                              if:{$eq:["$fuel_type","Diesel"]},
+                              then:"Diesel",
+                              else:"Petrol"
+                         }
+                    }
+                    },
+                    
+               }
+          
+     ])
+
+
+ db.cars.aggregate([
+ {
+     $project:{
+          _id:0,
+        
+          price:1,
+          maker:1,
+          priceRange:{
+               $switch:{
+                    branches:[
+                         {
+                              case:{
+                                   $lt:["$price",1000000]
+                              },
+                              then:"Budget"
+                         },
+                         {
+                              case:{
+                                   $gte:["$price",1000000],
+                                   $lt:["$price",2000000]
+                              },
+                              then:"Mid Range"
+                         },
+                         {
+                              case:{
+                                   $gte:["$price",2000000]
+                              },
+                              then:"Luxury"
+                         }
+                    ],
+                    default:"Unknown"
+               }
+          }
+     
+          }
+     }
+ 
+ 
+     ])   
+     
+     db.cars.aggregate([
+          {
+               $project:{
+                    _id:0,
+                    model:1,
+                    maker:1,
+                    price:1,
+                            price:{
+                         $add:["$price",1000]
+                    }
+               }
+          }
+     ])
+     db.cars.aggregate([
+          {
+               $project:{
+                    _id:0,
+                    model:1,
+                    maker:1,
+                    price:1,
+               }
+          },
+          {
+               $addFields:{
+                    price:{
+                         $round:{$divide:["$price",100000],2}
+                    }
+               }
+          }
+     ])
+
+ db.cars.aggregate([
+     {
+          $match:{
+               maker:"Hyundai"
+          }       
+     },
+     {
+          $set:{
+               totalServiceCost:{
+                    $sum:"$service_history.cost"
+               }
+          }
+     },
+     {
+          $project:{
+               _id:0,
+               model:1,
+               totalServiceCost:1
+          }
+     },
+     {
+          $sort:{
+               totalServiceCost:-1
+          }
+     }
+
+ ])    
+
+ db.cars.aggregate([
+     {
+          $project:{
+               _id:0,
+               model:1,
+               maker:1,
+               fuelCategory:{
+                    $cond:{
+                         if:{$eq:["$fuel_type","Diesel"]},
+                         then:"Diesel",
+                         else:"Petrol"
+                    }
+               }
+          }
+     }
+ ])
+
+ db.users.aggregate([
+     {
+          $lookup:{
+               from:"orders",
+               localField:"_id",
+               foreignField:"user_id",
+               as:"user_orders"
+          }
+     }
+ ])
